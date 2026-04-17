@@ -42,8 +42,8 @@ The graded deliverable is the deauth attack only. Everything else
 (handshake capture + offline crack, evil twin, PMF mitigation demo) is
 optional bonus material.
 
-`TODO.md` walks through the required path; `REPORT.md` has placeholders
-for the bonus sections you can delete if you skip them.
+`REPORT.md` contains the full writeup (deauth demo, handshake crack,
+evil twin).
 
 ---
 

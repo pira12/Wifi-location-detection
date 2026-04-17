@@ -9,6 +9,9 @@ venv/
 # wifipi runtime artefacts
 loot/
 
+# Working docs (plans, specs) — keep docs/images tracked for README
+docs/superpowers/
+
 # Editor / OS
 .DS_Store
 *.swp

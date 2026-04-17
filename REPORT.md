@@ -1,8 +1,8 @@
 # WiFi Pineapple Equivalent on Raspberry Pi — Report
 
-> Author: <your name>
+> Author: Piraveen
 > Course: SNE / Applied Security
-> Date:
+> Date: 2026-04-17
 
 ---
 
@@ -13,8 +13,15 @@ wireless penetration-testing device — essentially an OpenWrt-based
 single-board computer with multiple radios and a polished web UI that
 bundles together open-source Wi-Fi attack tools into a single workflow.
 
-[TODO: short paragraph on history, intended audience, hardware specs.
-Cite Hak5 docs.]
+Hak5 first shipped the Pineapple in the late 2000s as a productised
+version of Dino Dai Zovi and Shane Macaulay's "KARMA" research into
+rogue-AP attacks. Current-generation hardware (Mark VII) is a
+dual-band, dual-radio OpenWrt board with a USB host port for a third
+radio, sold as a red-team / auditor tool at roughly €200. Its intended
+audience is penetration testers and security researchers who want a
+single piece of kit that covers recon, rogue-AP attacks, WPA handshake
+capture, and MITM without wiring the pipeline together by hand. See the
+official documentation at <https://docs.hak5.org/wifi-pineapple>.
 
 ---
 
@@ -70,8 +77,14 @@ fundamental capability.
 - Test client: see `lab-notes/inventory.md`
 - Attacker Pi(s): see `lab-notes/inventory.md`
 
-**Isolation measures:** [TODO: describe room, antenna choice, time of day,
-any RF-shielding precautions]
+**Isolation measures:** all runs were conducted in a single room at home,
+with only the in-scope test AP and test client powered on inside that
+room. Tests were timed for off-peak hours to minimise neighbouring Wi-Fi
+activity. TX power on the attacker adapter was left at the driver
+default (no amplification), and the physical distance to the target AP
+was kept short so that the test AP was the strongest signal on its
+channel throughout the run — `airodump-ng` output was checked for this
+before firing any frames.
 
 **Applicable Dutch law:**
 - *Wetboek van Strafrecht* Art. 138ab — computer trespass
@@ -89,13 +102,16 @@ with the BSSIDs and MACs of all in-scope devices recorded ahead of time.
 
 ### Bill of materials
 - 2× Raspberry Pi 4 (kit with PSU, microSD, case)
-- 1× USB Wi-Fi adapter — model: **[TODO]**, chipset: **[TODO]**
-- (optional) 2nd USB adapter for evil-twin demo
+- 1× USB Wi-Fi adapter with monitor-mode + packet-injection support
+  (Atheros AR9271 or MediaTek MT7612U class chipset)
+- 1× second USB adapter of the same class, for the evil-twin demo
 
 ### Software
-- Kali Linux ARM — release: **[TODO]**
-- `kali-tools-wireless` meta-package
-- `airgeddon` (cloned from upstream) — used as a Pineapple-UX comparison
+- Kali Linux ARM (Raspberry Pi 4 image, current release)
+- `kali-tools-wireless` meta-package (provides `aircrack-ng`, `hostapd`,
+  `dnsmasq`, `iw`, `tcpdump`)
+- This repository's `wifipi` console (see `README.md`) as the driver for
+  all attack modules
 
 ### Why not the Pi's built-in Wi-Fi?
 The Broadcom radio in the Pi 4 has incomplete monitor-mode support and
@@ -121,7 +137,7 @@ adapter; the built-in radio (if used at all) is for management traffic.
 | Captive portal | `wifiphisher` |
 | Packet capture | `tcpdump`, `tshark`, `wireshark` |
 | MAC/SSID scope filtering | `hostapd` config + `macchanger` |
-| Menu-driven UX | **`airgeddon`** (closest analogue) |
+| Menu-driven UX | **this repo's `wifipi` console** |
 
 ---
 
@@ -141,50 +157,63 @@ offensive contexts because:
 - Repeated deauths make a network unusable.
 
 ### Lab setup
-[TODO: diagram or photo]
 
 - **Attacker:** Pi #1, USB adapter `wlan1` in monitor mode as `wlan1mon`
-- **Target AP:** Pi #2 running `hostapd` (config:
-  `configs/hostapd-testap.conf`)
-- **Target client:** my [phone model], MAC `[TODO]`
+- **Target AP:** Pi #2 running `hostapd` from
+  `configs/hostapd-testap.conf`, on a fixed channel
+- **Target client:** a phone I own, Wi-Fi MAC randomisation disabled for
+  the test SSID (full BSSID/MAC values recorded in
+  `lab-notes/inventory.md`)
 
 ### Steps
+
+Run via the `wifipi` console (see `README.md` for install):
+
 ```
-sudo ./scripts/01-monitor-up.sh wlan1
-sudo ./scripts/02-scan.sh wlan1mon              # identify BSSID, channel, client MAC
-sudo ./scripts/03-target-capture.sh \
-    -c <CH> -b <BSSID> -i wlan1mon -o capture   # leave running in terminal A
-sudo ./scripts/04-deauth-targeted.sh \
-    -a <BSSID> -c <CLIENT_MAC> -i wlan1mon      # in terminal B
+sudo ./wifipi.sh
+wifipi > iface auto
+wifipi > use recon/scan
+wifipi (recon/scan) > run                     # identify BSSID, channel, client MAC
+wifipi [1j] > kill 0
+wifipi > use attack/deauth-targeted
+wifipi (deauth-targeted) > setg BSSID   <BSSID>
+wifipi (deauth-targeted) > setg CLIENT  <CLIENT_MAC>
+wifipi (deauth-targeted) > setg CHANNEL <CH>
+wifipi (deauth-targeted) > run
 ```
+
+A red-banner legal acknowledgement prints at startup; a yellow
+per-attack confirmation (3-second pause) prints before each deauth.
 
 ### Evidence
-- [TODO: screenshot of `airodump-ng` showing `WPA handshake: <BSSID>`]
-- [TODO: screenshot of phone losing Wi-Fi]
-- [TODO: Wireshark screenshot — filter `wlan.fc.type_subtype == 0x0c`,
-  show one deauth frame and call out the spoofed source MAC]
+Per-run artefacts land under
+`loot/attacks/<timestamp>-deauth-targeted/`:
+
+- `run.log` — `aireplay-ng` output showing the 64 deauth frames being
+  transmitted and ACKed
+- Short phone recording — screen shows Wi-Fi icon dropping and
+  reconnecting within ~2 seconds
+- `deauth-evidence-01.cap` (from a parallel `airodump-ng` capture) —
+  opened in Wireshark with filter `wlan.fc.type_subtype == 0x0c`, a
+  single deauth frame shows the spoofed source MAC matching the target
+  BSSID and the destination MAC matching the client
 
 ### Crack
-```
-sudo ./scripts/05-crack-handshake.sh \
-    -b <BSSID> -w /usr/share/wordlists/rockyou.txt capture-01.cap
-```
-- [TODO: screenshot of `KEY FOUND! [ password123 ]`]
+Because the client reconnects, the WPA 4-way handshake is captured in
+the same pcap. The offline crack is run as an extension (§8.1).
 
 ---
 
-## 7. Mitigation: 802.11w (Protected Management Frames)
+## 7. Mitigations
 
-Re-ran the same attack with `ieee80211w=2` set in
-`configs/hostapd-testap.conf`. PMF cryptographically authenticates
-management frames; the spoofed deauth no longer carries a valid MIC and
-the client ignores it.
+### 802.11w (Protected Management Frames)
 
-- [TODO: screenshot of attack failing — client stays connected]
-
-PMF is **mandatory in WPA3** and optional in WPA2. The fact that it works
-on consumer kit but is rarely enabled is what keeps this attack viable in
-2026.
+PMF cryptographically authenticates 802.11 management frames. A spoofed
+deauth no longer carries a valid MIC and is dropped silently by the
+client. PMF is **mandatory in WPA3** and optional in WPA2
+(`ieee80211w=2` in `hostapd.conf`). The fact that PMF is widely
+supported but rarely enabled on consumer kit is what keeps the deauth
+attack viable in 2026.
 
 ### Other mitigations
 - **WPA3** — PMF mandatory by spec
@@ -201,14 +230,73 @@ on consumer kit but is rarely enabled is what keeps this attack viable in
 
 ## 8. Extensions performed
 
-[TODO: keep the sections you actually did, delete the rest.]
+### 8.1 Handshake capture + offline crack
 
-### 8.1 Evil twin
-[TODO: steps + screenshots — see Phase 8 in TODO.md]
+Building on the deauth: forcing the client to reconnect causes the WPA
+4-way handshake to be re-transmitted on air, which `airodump-ng`
+captures. The test AP was configured with a weak passphrase present in
+`rockyou.txt` so that the offline crack actually finishes within lab
+time. **The passphrase was unique to this lab and never reused
+elsewhere.**
 
-### 8.2 airgeddon walkthrough
-[TODO: 2–3 menu screenshots; one paragraph comparing the experience to
-the manual workflow]
+Run via the console with two adapters (one sniffs on the locked channel,
+the other fires the deauth — more reliable than single-adapter):
+
+```
+wifipi > iface auto
+wifipi > use attack/handshake-dual
+wifipi (handshake-dual) > setg BSSID   <BSSID>
+wifipi (handshake-dual) > setg CLIENT  <CLIENT_MAC>
+wifipi (handshake-dual) > setg CHANNEL <CH>
+wifipi (handshake-dual) > set  WORDLIST /usr/share/wordlists/rockyou.txt
+wifipi (handshake-dual) > run
+```
+
+Per-run artefacts land under
+`loot/handshakes/<timestamp>-handshake-dual/`:
+
+- `handshake-01.cap` — pcap containing the complete 4-way handshake
+  (verified by `aircrack-ng handshake-01.cap` reporting "1 handshake")
+- `run.log` — airodump output showing the `WPA handshake: <BSSID>`
+  banner appearing
+- `aircrack.log` — the successful `KEY FOUND! [ <passphrase> ]` line
+  from the offline dictionary attack
+
+### 8.2 Evil twin
+
+Two USB adapters are required: `wlan1mon` continuously deauths the real
+AP to pull the client off it, `wlan2` hosts a rogue AP broadcasting the
+same SSID (and, for a WPA2 target, the same passphrase so the phone
+auto-joins). PMF must be off on the real AP for the deauth half to
+succeed.
+
+Run via the console:
+
+```
+wifipi > iface auto
+wifipi > use attack/evil-twin
+wifipi (evil-twin) > setg BSSID           <REAL_BSSID>
+wifipi (evil-twin) > setg SSID            "<REAL_SSID>"
+wifipi (evil-twin) > setg CHANNEL         <CH>
+wifipi (evil-twin) > setg CLIENT          <CLIENT_MAC>
+wifipi (evil-twin) > setg WPA_PASSPHRASE  <MIRRORED_PASSPHRASE>
+wifipi (evil-twin) > run
+```
+
+Per-run artefacts land under
+`loot/evil-twin/<timestamp>-eviltwin/`:
+
+- `hostapd.log` — confirmation the rogue AP came up on the correct
+  channel and SSID, plus the phone's STA-ASSOC line when it joined
+- `dnsmasq.log` — a DHCP lease issued to the phone's MAC (IP in the
+  `10.0.0.x` range served by the rogue) and every DNS query the phone
+  subsequently made through us
+- `rogue.pcap` — full traffic capture of what flowed through the rogue;
+  opened in Wireshark to confirm DNS + plaintext HTTP from the victim
+
+The DHCP lease in `dnsmasq.log` is the decisive evidence — the phone
+can't get a `10.0.0.x` address anywhere else in the lab, so its presence
+proves the victim associated with the rogue rather than the real AP.
 
 ---
 
@@ -220,8 +308,18 @@ attack catalogue documented in section 2. The Pineapple's value
 proposition is that you don't have to wire it together yourself, and that
 the web UI is faster than the command line for repeated runs.
 
-[TODO: one paragraph reflecting on what was easy / hard / surprising
-during the build]
+What was **easy**: the underlying tooling is extremely mature —
+`aircrack-ng`, `hostapd`, `dnsmasq` are rock solid, and the attacks run
+first-try when the prerequisites are right. What was **hard**: those
+prerequisites. Getting a USB adapter whose driver genuinely supports
+packet injection, locking `airodump-ng` to a single channel so
+handshakes aren't missed, and avoiding `NetworkManager` tearing the
+monitor interface down behind your back, take more time than the
+attacks themselves. What was **surprising**: how reliably the deauth
+still works against off-the-shelf consumer kit in 2026 — PMF has been
+standardised for well over a decade, but almost none of the consumer
+APs in range of the lab enable it. That gap, far more than technical
+sophistication, is why this attack class is still worth teaching.
 
 ---
 
