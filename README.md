@@ -1,6 +1,6 @@
 # wifipi — WiFi Pineapple Equivalent on a Raspberry Pi
 
-School project for SNE / Applied Security. A `msfconsole`-style
+School project for SNE / Advances Security. A `msfconsole`-style
 interactive console for running the standard Pi-based Wi-Fi pentest
 workflow (deauth, handshake capture, evil twin, offline crack) against
 equipment the operator owns.
