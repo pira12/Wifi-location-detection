@@ -85,7 +85,8 @@ for the bonus sections you can delete if you skip them.
 |   |- 07-cleanup.sh             <- tear everything down
 |   |- 08-handshake-capture.sh   <- all-in-one: capture + (optional) crack
 |   |- 09-deauth-loop.sh         <- continuous deauth (for evil twin pull)
-|   `- 10-evil-twin-attack.sh    <- all-in-one evil twin orchestrator
+|   |- 10-evil-twin-attack.sh    <- all-in-one evil twin orchestrator
+|   `- 11-handshake-dual.sh      <- handshake capture using TWO adapters
 |- configs/
 |   |- hostapd-testap.conf       <- legit test AP (Pi #2)
 |   |- hostapd-rogue.conf        <- evil-twin AP (Pi #1)
@@ -116,12 +117,13 @@ sudo ./scripts/00-prereq-check.sh
 
 #### `01-monitor-up.sh`
 Kills processes that interfere with monitor mode (NetworkManager,
-wpa_supplicant, etc.) and puts the named wireless interface into monitor
-mode. Output interface is usually `<name>mon` (e.g. `wlan1` →
+wpa_supplicant, etc.) and puts one or more wireless interfaces into
+monitor mode. Output interface is usually `<name>mon` (e.g. `wlan1` →
 `wlan1mon`).
 
 ```bash
-sudo ./scripts/01-monitor-up.sh wlan1
+sudo ./scripts/01-monitor-up.sh wlan1                 # single adapter
+sudo ./scripts/01-monitor-up.sh wlan1 wlan2           # both USB adapters
 ```
 
 ### Reconnaissance
@@ -205,6 +207,28 @@ sudo ./scripts/08-handshake-capture.sh \
 ```
 
 This bundles scripts 03 + 04 + 05 into one command.
+
+#### `11-handshake-dual.sh`
+Same as script 08 but uses **two** monitor adapters — one for capture,
+one for the deauth — so airodump never has to share the radio with
+aireplay. The cleanest workflow when you have two USB adapters:
+airodump runs continuously on a dedicated radio and never misses the
+handshake. Use this instead of script 08 if you have the hardware.
+
+```bash
+# First put both adapters into monitor mode:
+sudo ./scripts/01-monitor-up.sh wlan1 wlan2
+
+# Then run the dual capture:
+sudo ./scripts/11-handshake-dual.sh \
+    -a AA:BB:CC:11:22:33 -c DD:EE:FF:44:55:66 \
+    -m wlan1mon -d wlan2mon -k 11 \
+    -w /usr/share/wordlists/rockyou.txt
+```
+
+Flags: `-m` capture iface, `-d` deauth (attack) iface, `-a` BSSID,
+`-c` client MAC, `-k` channel, `-o` output prefix, `-w` wordlist
+(optional auto-crack), `-t` timeout in seconds (default 120).
 
 ### Evil twin
 
@@ -307,8 +331,9 @@ The scripts are numbered for the typical run order:
 
 ```
 00 (verify) -> 01 (monitor) -> 02 (scan) -> 04 (deauth)            # required demo
-                                         \-> 03 + 04 + 05          # handshake + crack (manual)
-                                          -> 08                    # handshake + crack (auto)
+                                         \-> 03 + 04 + 05          # handshake + crack (manual, 1 adapter)
+                                          -> 08                    # handshake + crack (auto, 1 adapter)
+                                          -> 11                    # handshake + crack (auto, 2 adapters - best)
                                          \-> 06 + 09 + tcpdump     # evil twin (manual)
                                           -> 10                    # evil twin (auto)
                                          \-> 07                    # cleanup after manual flows
