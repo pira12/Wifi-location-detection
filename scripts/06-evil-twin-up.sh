@@ -29,6 +29,13 @@ warn "  hostapd config = $ROOT/configs/hostapd-rogue.conf"
 warn "  dnsmasq config = $ROOT/configs/dnsmasq-rogue.conf"
 sleep 3
 
+[[ -d "/sys/class/net/$AP_IFACE" ]] || die "AP iface $AP_IFACE not found. Plug in the second USB adapter."
+
+if command -v nmcli >/dev/null 2>&1; then
+    info "Telling NetworkManager to leave $AP_IFACE alone..."
+    nmcli device set "$AP_IFACE" managed no || true
+fi
+
 info "Configuring $AP_IFACE..."
 ip addr flush dev "$AP_IFACE" || true
 ip addr add "$AP_IP" dev "$AP_IFACE"

