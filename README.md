@@ -1,5 +1,7 @@
 # wifipi — WiFi Pineapple Equivalent on a Raspberry Pi
 
+![wifipi launch banner](docs/images/wifipi-banner.png)
+
 School project for SNE / Advances Security. A `msfconsole`-style
 interactive console for running the standard Pi-based Wi-Fi pentest
 workflow (deauth, handshake capture, evil twin, offline crack) against
