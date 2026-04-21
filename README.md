@@ -51,7 +51,7 @@ evil twin).
 
 ```bash
 git clone <this repo>
-cd Wifi-location-detection
+cd WifiPi
 pip install -r requirements.txt
 sudo ./wifipi.sh
 ```
