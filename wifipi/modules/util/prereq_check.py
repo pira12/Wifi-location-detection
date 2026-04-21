@@ -8,7 +8,8 @@ from wifipi.procutil import missing_tools, run as run_proc
 
 
 TOOLS = ["airmon-ng", "airodump-ng", "aireplay-ng", "aircrack-ng",
-         "hostapd", "dnsmasq", "iw", "iptables", "tcpdump"]
+         "hostapd", "dnsmasq", "iw", "iptables", "tcpdump",
+         "hostapd-mana", "hostapd-wpe", "mdk4"]
 
 
 class PrereqCheck(Module):

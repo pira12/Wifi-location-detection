@@ -14,6 +14,7 @@ from .procutil import missing_tools
 REQUIRED_TOOLS = [
     "airmon-ng", "airodump-ng", "aireplay-ng", "aircrack-ng",
     "hostapd", "dnsmasq", "iw", "iptables", "tcpdump",
+    "hostapd-mana", "hostapd-wpe", "mdk4",
 ]
 
 WIFI = r"""
@@ -86,7 +87,7 @@ def main() -> int:
         ), file=sys.stderr)
         print(ansi.style(
             "    install with: sudo apt install -y aircrack-ng hostapd "
-            "dnsmasq iptables tcpdump iw",
+            "dnsmasq iptables tcpdump iw hostapd-mana hostapd-wpe mdk4",
             fg=ansi.Fg.YELLOW,
         ), file=sys.stderr)
         print(ansi.style(

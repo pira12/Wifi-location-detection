@@ -1,0 +1,103 @@
+Free WiFi
+Public WiFi
+Guest
+Starbucks WiFi
+McDonalds Free WiFi
+Airport WiFi
+Hotel Guest
+NETGEAR
+NETGEAR24
+NETGEAR5
+Linksys
+Linksys5G
+TP-Link
+TP-LINK_2.4GHz
+TP-LINK_5GHz
+ASUS
+ASUS_5G
+Verizon
+ATT
+ATTWIFI
+Xfinity
+xfinitywifi
+CenturyLink
+Comcast
+Optimum WiFi
+HomeWiFi
+MyWiFi
+WiFi
+Home
+Apartment
+eduroam
+iPhone
+Android
+Samsung Galaxy
+Pixel
+PrinterSetup
+HP-Print
+Canon Print
+EPSON
+Chromecast
+Roku
+Alexa
+Nest
+Ring
+SmartThings
+Tesla Guest
+BMW
+AUDI
+Mercedes
+Ford Sync
+GoPro
+DJI
+Fitbit
+Bluetooth Speaker
+JBL
+Bose
+Sony
+Google WiFi
+Google Nest
+Amazon Echo
+Ubiquiti
+MikroTik
+Belkin
+D-Link
+DLINK
+Cisco
+Ruckus
+Meraki
+Aruba
+Zyxel
+Huawei
+Xiaomi
+Redmi
+OnePlus
+OPPO
+Vivo
+Realme
+Nokia
+Motorola
+LG
+Panasonic
+Sharp
+Philips
+Bose SoundLink
+Sonos
+AppleTV
+Firestick
+Nvidia Shield
+SteamDeck
+Nintendo Switch
+PS5
+Xbox
+Dell
+Lenovo
+HP Pavilion
+MacBook
+Surface
+ThinkPad
+Dell Wireless
+ISP Router
+Router
+AP
+Guest Network

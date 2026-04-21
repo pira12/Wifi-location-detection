@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Router Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { font-family: -apple-system, Segoe UI, sans-serif; margin: 0; padding: 2em;
+       background:#f4f4f4; color:#222;}
+.card { background:#fff; max-width:380px; margin:4em auto; padding:2em;
+        border-radius:8px; box-shadow:0 2px 12px rgba(0,0,0,0.08);}
+h1 { font-size:1.2em; margin:0 0 1em;}
+label { display:block; margin:.6em 0 .2em; font-size:.9em;}
+input[type=text], input[type=password] { width:100%; box-sizing:border-box;
+        padding:.6em; border:1px solid #ccc; border-radius:4px;}
+button { margin-top:1.2em; width:100%; padding:.7em; background:#0072c6;
+         color:#fff; border:0; border-radius:4px; font-size:1em; cursor:pointer;}
+.note { font-size:.75em; color:#a33; margin-top:1.5em; text-align:center;}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>Sign in to continue</h1>
+<form method="POST" action="/">
+<label>Username</label>
+<input type="text" name="username" autocomplete="username" required>
+<label>Password</label>
+<input type="password" name="password" autocomplete="current-password" required>
+<button type="submit">Sign in</button>
+</form>
+<div class="note">Lab-demo credential-phishing page. Authorised testing only.</div>
+</div>
+</body>
+</html>

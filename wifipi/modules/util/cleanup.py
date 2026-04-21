@@ -25,6 +25,9 @@ class Cleanup(Module):
         # kill any rogue AP services we might have launched
         run_proc(["pkill", "-f", "hostapd"], stdout=ln, stderr=ln)
         run_proc(["pkill", "-f", "dnsmasq"], stdout=ln, stderr=ln)
+        run_proc(["pkill", "-f", "hostapd-mana"], stdout=ln, stderr=ln)
+        run_proc(["pkill", "-f", "hostapd-wpe"], stdout=ln, stderr=ln)
+        run_proc(["pkill", "-f", "mdk4"], stdout=ln, stderr=ln)
 
         sh(["iptables", "-t", "nat", "-F", "POSTROUTING"])
         sh(["iptables", "-F", "FORWARD"])

@@ -133,6 +133,21 @@ Run `show modules` for the current list. Organised by phase:
 - `post/crack` — offline aircrack-ng on an existing pcap
 - `util/prereq-check` — verify tools are installed
 - `util/cleanup` — revert monitor mode, flush iptables, restart NM
+- `recon/probes` — harvest probe requests; writes summary.txt with
+  preferred-network lists + OUI vendor
+- `attack/karma` — rogue AP that answers every probe (hostapd-mana)
+- `attack/beacon-flood` — flood fake beacons from an SSID list (mdk4)
+- `attack/ssid-pool` — rogue AP seeded with SSIDs harvested from
+  `recon/probes` (hostapd-mana responder)
+- `attack/wpa-enterprise` — clone a WPA-Enterprise SSID via
+  hostapd-wpe; logs MSCHAPv2 hashes
+- `attack/captive-portal` — open rogue AP + catch-all DNS + credential-
+  phishing web page
+- `attack/dns-spoof` — open rogue AP whose dnsmasq spoofs A-records
+  from a rules file
+- `attack/mitm-capture` — standalone tcpdump on AP_IFACE (pair with any
+  rogue AP module)
+- `util/pmf-demo` — demonstrate 802.11w mitigates deauth
 
 ## Common workflows
 

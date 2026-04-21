@@ -68,6 +68,9 @@ achievable with open-source tools on any Linux box with the right Wi-Fi
 hardware. The Pineapple's value is UX and hardware integration, not
 fundamental capability.
 
+> **Parity status:** as of 2026-04-21 every bullet in this catalogue
+> has a corresponding `wifipi` module. See §5 for the mapping.
+
 ---
 
 ## 3. Legal and ethical scope
@@ -122,22 +125,25 @@ adapter; the built-in radio (if used at all) is for management traffic.
 
 ## 5. Pineapple → Pi tool mapping
 
-| Pineapple feature | Open-source equivalent on the Pi |
-|---|---|
-| Airspace recon dashboard | `kismet` (web UI) or `airodump-ng` |
-| Host rogue AP | `hostapd` + `dnsmasq` |
-| Karma attack | `hostapd-mana`, `eaphammer` |
-| Beacon flooding | `mdk4 b` |
-| Evil twin | `airgeddon`, `wifiphisher`, manual `hostapd` |
-| WPA handshake capture | `airodump-ng` |
-| WPA crack | `aircrack-ng` (CPU), `hashcat` (GPU) |
-| WPA-Enterprise attacks | `hostapd-wpe`, `eaphammer` |
-| Deauth | `aireplay-ng --deauth`, `mdk4 d` |
-| DNS spoof / MITM | `bettercap`, `dnsmasq --address=/#/...` |
-| Captive portal | `wifiphisher` |
-| Packet capture | `tcpdump`, `tshark`, `wireshark` |
-| MAC/SSID scope filtering | `hostapd` config + `macchanger` |
-| Menu-driven UX | **this repo's `wifipi` console** |
+| Pineapple feature | Open-source equivalent on the Pi | wifipi module |
+|---|---|---|
+| Airspace recon dashboard | `kismet` (web UI) or `airodump-ng` | `recon/scan`, `recon/target` |
+| Probe-request logging | `airodump-ng` CSV | `recon/probes` |
+| Host rogue AP | `hostapd` + `dnsmasq` | `attack/evil-twin`, `attack/captive-portal`, `attack/dns-spoof` |
+| Karma attack | `hostapd-mana`, `eaphammer` | `attack/karma` |
+| Beacon flooding | `mdk4 b` | `attack/beacon-flood` |
+| SSID pool from probes | `hostapd-mana` responder | `attack/ssid-pool` |
+| Evil twin | `airgeddon`, `wifiphisher`, manual `hostapd` | `attack/evil-twin` |
+| WPA handshake capture | `airodump-ng` | `attack/handshake`, `attack/handshake-dual` |
+| WPA crack | `aircrack-ng` (CPU), `hashcat` (GPU) | `post/crack` |
+| WPA-Enterprise attacks | `hostapd-wpe`, `eaphammer` | `attack/wpa-enterprise` |
+| Deauth | `aireplay-ng --deauth`, `mdk4 d` | `attack/deauth-targeted`, `attack/deauth-broadcast`, `attack/deauth-loop` |
+| DNS spoof / MITM | `bettercap`, `dnsmasq --address=/#/...` | `attack/dns-spoof` |
+| Captive portal | `wifiphisher` | `attack/captive-portal` |
+| Packet capture | `tcpdump`, `tshark`, `wireshark` | `attack/mitm-capture` |
+| MAC/SSID scope filtering | `hostapd` config + `macchanger` | (inventory soft-gate only) |
+| PMF mitigation demo | `hostapd ieee80211w=2` | `util/pmf-demo` |
+| Menu-driven UX | **this repo's `wifipi` console** | (every module) |
 
 ---
 
